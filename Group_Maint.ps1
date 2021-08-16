@@ -12,6 +12,7 @@
 .NOTES
     Author:         Alex Jaya
     Creation Date:  08/06/2021
+    Modified Date:  08/12/2021
 
 .EXAMPLE
 
@@ -21,29 +22,30 @@ Import-Module ActiveDirectory
 $Group = 'NAMEOFGROUP'
 $GroupPath = 'PATH'
 $Previous ="$GroupPath\PreviousMonitor.csv"
-$current ="$GroupPath\CurrentMonitor.csv"
+$currentMembers = Get-AdGroupMember -Identity $Group | Select-Object samaccountname
+$previousMembers = import-csv -Path $Previous | Select-Object samaccountname
 
 #Detect deleted members
-Get-AdGroupMember -Identity $Group | Select-Object samaccountname |export-csv -Path $current -Encoding UTF8 -NoTypeInformation
-$currentMembers = Get-AdGroupMember -Identity $Group | Select-Object -ExpandProperty samaccountname
-import-csv -path $Previous | Where-Object {$Currentmembers -notcontains $_.samaccountname} | Export-Csv "$GroupPath\DelGroupMembers.csv" -NoTypeInformation
+$RemoveUsers = $previousMembers | Where-Object -FilterScript{$_.samaccountname -notin $currentMembers.samaccountname} | Select-Object -ExpandProperty samaccountname
 
 #Detect new members
-$previousMembers = import-csv -Path $Previous | Select-Object -ExpandProperty samaccountname
-import-csv -path $Current | Where-Object {$Previousmembers -notcontains $_.samaccountname} | Export-Csv "$GroupPath\NewGroupMembers.csv" -NoTypeInformation
+$AddUsers = $currentMembers | Where-Object -FilterScript{$_.samaccountname -notin $previousMembers.samaccountname} | Select-Object -ExpandProperty samaccountname
 
 Get-AdGroupMember -Identity $Group | Select-Object samaccountname | Export-Csv -Path $Previous -Encoding UTF8 -NoTypeInformation
 
-#-Take Action Here
+#-Take Action Here-------
 
 #Action on New Users
-$NewUsers = Import-Csv "$GroupPath\NewGroupmembers.csv" -Delimiter ","
-foreach($user in $NewUsers){
-    #Action
+if($AddUsers){
+    foreach($user in $AddUsers){
+        #Action
+    }
 }
 
+
 #Action on Removed Users
-$RemovedUsers = Import-Csv "$GroupPath\DelGroupmembers.csv" -Delimiter ","
-foreach($user in $RemovedUsers){
-    #Action
+if($RemoveUsers){
+    foreach($user in $RemoveUsers){
+        #Action
+    }
 }
