@@ -6,8 +6,6 @@
 .INPUTS
     Modify the $Group and $GroupPath variable 
 .OUTPUTS
-    DelGroupMembers.csv and NewGroupMembers.csv will be used when modifying the PNE attribute
-    You will have to configure the variables for path and csv names
 
 .NOTES
     Author:         Alex Jaya
